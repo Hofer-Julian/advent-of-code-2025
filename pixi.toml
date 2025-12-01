@@ -1,0 +1,17 @@
+[workspace]
+authors = ["Julian Hofer <julianhofer@gnome.org>"]
+channels = ["https://prefix.dev/conda-forge"]
+name = "advent-of-code-2025"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+nu = { cmd = "nu days/{{ day }}/main.nu inputs/{{ day }}.txt", args = ["day"] }
+zig = { cmd = "zig run days/{{ day }}/main.zig -- inputs/{{ day }}.txt", args = ["day"] }
+go = { cmd = "go run days/{{ day }}/main.go inputs/{{ day }}.txt", args = ["day"] }
+
+[dependencies]
+nushell = ">=0.109.0,<0.110"
+zig = ">=0.15.2,<0.16"
+go = ">=1.25.4,<2"
+gopls = ">=0.20.0,<0.21"
