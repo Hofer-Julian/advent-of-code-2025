@@ -6,9 +6,7 @@ platforms = ["linux-64"]
 version = "0.1.0"
 
 [tasks]
-nu = { cmd = "nu days/{{ day }}/main.nu inputs/{{ day }}.txt", args = ["day"] }
-zig = { cmd = "zig run days/{{ day }}/main.zig -- inputs/{{ day }}.txt", args = ["day"] }
-go = { cmd = "go run days/{{ day }}/main.go inputs/{{ day }}.txt", args = ["day"] }
+nu = { cmd = "nu day-{{ day }}/part-{{ part }}.nu", args = ["day", "part"] }
 
 [dependencies]
 nushell = ">=0.109.0,<0.110"
