@@ -7,9 +7,10 @@ version = "0.1.0"
 
 [tasks]
 nu = { cmd = "nu day-{{ day }}/part-{{ part }}.nu", args = ["day", "part"] }
+py = { cmd = "python day-{{ day }}/part-{{ part }}.py", args = ["day", "part"] }
+
 
 [dependencies]
 nushell = ">=0.109.0,<0.110"
-zig = ">=0.15.2,<0.16"
-go = ">=1.25.4,<2"
-gopls = ">=0.20.0,<0.21"
+python = ">=3.14.0,<3.15"
+
