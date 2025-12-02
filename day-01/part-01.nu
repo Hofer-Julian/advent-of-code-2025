@@ -1,7 +1,7 @@
 use std
 
 
-def part-one [] {
+def solve [] {
     let input = lines
         | reduce --fold [50, 0] { |l, acc|
             let sign = if ($l | str substring 0..0) == "L" {
@@ -29,7 +29,7 @@ def part-one [] {
     $input.1
 }
 
-let result = open day-01/example.txt | part-one
+let result = open day-01/example.txt | solve
 std assert equal $result 3
 
-open day-01/input.txt | part-one
+open day-01/input.txt | solve

@@ -1,7 +1,7 @@
 use std
 
 
-def part-two [] {
+def solve [] {
     let input = lines
         | reduce --fold [50, 0] { |l, acc|
             mut result = $acc.0
@@ -25,7 +25,7 @@ def part-two [] {
     $input.1
 }
 
-let result = open day-01/example.txt | part-two
+let result = open day-01/example.txt | solve
 std assert equal $result 6
 
-open day-01/input.txt | part-two
+open day-01/input.txt | solve
