@@ -36,7 +36,7 @@ def solve [] {
     $in
         | str trim
         | lines
-        | each { |bank| extract-bank-value $bank }
+        | par-each { |bank| extract-bank-value $bank }
         | math sum
 }
 
