@@ -3,9 +3,6 @@ from typing import Self
 
 
 class Range:
-    lower: int
-    upper: int
-
     def __init__(self, input: str):
         lower, upper = input.split("-")
         self.lower = int(lower)
