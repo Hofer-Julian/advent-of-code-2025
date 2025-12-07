@@ -19,7 +19,7 @@ def solve(input: str) -> int:
             elif entry == "^":
                 value = -1
             else:
-                ValueError(entry)
+                raise ValueError(entry)
             matrix[r, c] = value
 
     for r, row in enumerate(matrix):
