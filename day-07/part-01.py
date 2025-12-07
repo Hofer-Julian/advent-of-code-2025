@@ -28,9 +28,9 @@ def solve(input: str) -> int:
                     row[c] = 1
                 if entry == 2:
                     split += 1
-                    if c != 0:
+                    if c != 0 and row[c - 1] != 2:
                         row[c - 1] = 1
-                    if c != len(row) - 1:
+                    if c != len(row) - 1 and row[c + 1] != 2:
                         row[c + 1] = 1
     return split
 
