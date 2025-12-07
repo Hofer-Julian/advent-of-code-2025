@@ -2,6 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
+SPLITTER = -1
+
 
 def solve(input: str) -> int:
     rows = input.split("\n")
@@ -22,14 +24,15 @@ def solve(input: str) -> int:
 
     for r, row in enumerate(matrix):
         for c, entry in enumerate(row):
-            if r >= 1 and matrix[r - 1, c] >= 1:
-                if entry == -1:
-                    if c != 0 and row[c - 1] != -1:
-                        row[c - 1] += matrix[r - 1, c]
-                    if c != len(row) - 1 and row[c + 1] != -1:
-                        row[c + 1] += matrix[r - 1, c]
+            value_above = matrix[r - 1, c]
+            if r >= 1 and value_above >= 1:
+                if entry == SPLITTER:
+                    if c != 0 and row[c - 1] != SPLITTER:
+                        row[c - 1] += value_above
+                    if c != len(row) - 1 and row[c + 1] != SPLITTER:
+                        row[c + 1] += value_above
                 else:
-                    row[c] += matrix[r - 1, c]
+                    row[c] += value_above
 
     return matrix[-1, :].sum()
 
