@@ -37,7 +37,6 @@ def solve(input: str, number: int) -> int:
             if p2 in circuit:
                 circuit2 = circuit
 
-        # print(p1, p2, p1.distance(p2))
         match circuit1, circuit2:
             case None, None:
                 circuits.append({p1, p2})
