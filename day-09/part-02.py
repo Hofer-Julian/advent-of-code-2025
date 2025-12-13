@@ -12,13 +12,21 @@ class Point:
 
 
 @dataclass
-class Edge:
-    """A horizontal or vertical edge of the polygon."""
+class VerticalEdge:
+    """A vertical edge of the polygon (constant x)."""
 
-    is_vertical: bool
-    fixed_coord: int  # x for vertical edges, y for horizontal edges
-    min_coord: int  # min y for vertical, min x for horizontal
-    max_coord: int  # max y for vertical, max x for horizontal
+    x: int
+    y_min: int
+    y_max: int
+
+
+@dataclass
+class HorizontalEdge:
+    """A horizontal edge of the polygon (constant y)."""
+
+    y: int
+    x_min: int
+    x_max: int
 
 
 class Polygon:
@@ -26,8 +34,8 @@ class Polygon:
 
     def __init__(self, corners: list[Point]) -> None:
         self.corners = corners
-        self.vertical_edges: list[Edge] = []
-        self.horizontal_edges: list[Edge] = []
+        self.vertical_edges: list[VerticalEdge] = []
+        self.horizontal_edges: list[HorizontalEdge] = []
         self._build_edges()
 
     def _build_edges(self) -> None:
@@ -38,10 +46,14 @@ class Polygon:
 
             if p1.x == p2.x:
                 y_min, y_max = min(p1.y, p2.y), max(p1.y, p2.y)
-                self.vertical_edges.append(Edge(True, p1.x, y_min, y_max))
+                self.vertical_edges.append(
+                    VerticalEdge(x=p1.x, y_min=y_min, y_max=y_max)
+                )
             else:
                 x_min, x_max = min(p1.x, p2.x), max(p1.x, p2.x)
-                self.horizontal_edges.append(Edge(False, p1.y, x_min, x_max))
+                self.horizontal_edges.append(
+                    HorizontalEdge(y=p1.y, x_min=x_min, x_max=x_max)
+                )
 
     def is_point_inside(self, px: float, py: float) -> bool:
         """Check if point is inside using ray casting.
@@ -54,12 +66,12 @@ class Polygon:
 
         for edge in self.vertical_edges:
             # Edge must be to the right of the point
-            if edge.fixed_coord <= px:
+            if edge.x <= px:
                 continue
 
             # Ray's y must intersect the edge's y range
             # Use min <= py < max to avoid double-counting vertices
-            if edge.min_coord <= py < edge.max_coord:
+            if edge.y_min <= py < edge.y_max:
                 intersections += 1
 
         return intersections % 2 == 1
@@ -70,23 +82,23 @@ class Polygon:
         """Check if any polygon edge passes through the rectangle's interior."""
         for edge in self.vertical_edges:
             # Edge x must be strictly inside rectangle
-            if not (x_min < edge.fixed_coord < x_max):
+            if not (x_min < edge.x < x_max):
                 continue
 
             # Check if edge y-range overlaps with rectangle y-range
-            overlap_min = max(edge.min_coord, y_min)
-            overlap_max = min(edge.max_coord, y_max)
+            overlap_min = max(edge.y_min, y_min)
+            overlap_max = min(edge.y_max, y_max)
             if overlap_min < overlap_max:
                 return True
 
         for edge in self.horizontal_edges:
             # Edge y must be strictly inside rectangle
-            if not (y_min < edge.fixed_coord < y_max):
+            if not (y_min < edge.y < y_max):
                 continue
 
             # Check if edge x-range overlaps with rectangle x-range
-            overlap_min = max(edge.min_coord, x_min)
-            overlap_max = min(edge.max_coord, x_max)
+            overlap_min = max(edge.x_min, x_min)
+            overlap_max = min(edge.x_max, x_max)
             if overlap_min < overlap_max:
                 return True
 
@@ -106,7 +118,7 @@ def solve(input: str) -> int:
         if area <= max_area:
             continue
 
-        if is_rectangle_inside_polygon(p1, p2, polygon):
+        if rectangle_inside_polygon(p1, p2, polygon):
             max_area = area
 
     return max_area
@@ -120,7 +132,7 @@ def parse_points(input: str) -> list[Point]:
     return points
 
 
-def is_rectangle_inside_polygon(p1: Point, p2: Point, polygon: Polygon) -> bool:
+def rectangle_inside_polygon(p1: Point, p2: Point, polygon: Polygon) -> bool:
     """Check if rectangle with corners p1 and p2 is entirely inside the polygon."""
     x_min, x_max = min(p1.x, p2.x), max(p1.x, p2.x)
     y_min, y_max = min(p1.y, p2.y), max(p1.y, p2.y)
