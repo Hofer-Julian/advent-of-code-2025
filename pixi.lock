@@ -9,8 +9,11 @@ environments:
       linux-64:
       - conda: https://prefix.dev/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://prefix.dev/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
+      - conda: https://prefix.dev/conda-forge/noarch/about-time-4.2.1-pyhd8ed1ab_1.conda
+      - conda: https://prefix.dev/conda-forge/noarch/alive-progress-3.2.0-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/bzip2-1.0.8-hda65f42_8.conda
       - conda: https://prefix.dev/conda-forge/noarch/ca-certificates-2025.11.12-hbd8a1cb_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/grapheme-0.6.0-pyhd8ed1ab_1.conda
       - conda: https://prefix.dev/conda-forge/linux-64/ld_impl_linux-64-2.45-default_hbd61a6d_104.conda
       - conda: https://prefix.dev/conda-forge/linux-64/libblas-3.11.0-4_h4a7cf45_openblas.conda
       - conda: https://prefix.dev/conda-forge/linux-64/libcblas-3.11.0-4_h0358290_openblas.conda
@@ -58,6 +61,26 @@ packages:
   license_family: BSD
   size: 23621
   timestamp: 1650670423406
+- conda: https://prefix.dev/conda-forge/noarch/about-time-4.2.1-pyhd8ed1ab_1.conda
+  sha256: fcf2d011e32925bfa5ac31880f93d6ec32a9dd740dac015db8b2befe3c315e06
+  md5: eede52ab0c7269501d7f15d165e8067c
+  depends:
+  - python >=3.9,<4.0
+  license: MIT
+  license_family: MIT
+  size: 16455
+  timestamp: 1734963020869
+- conda: https://prefix.dev/conda-forge/noarch/alive-progress-3.2.0-pyhd8ed1ab_0.conda
+  sha256: 33754a60660d4864f0ae51416f39f0ee8f11ff5fbc92c2e5d595a7ba0a9950f8
+  md5: cd9fe18cd4096d59e0050f751b2861c1
+  depends:
+  - about-time 4.2.1
+  - grapheme 0.6.0
+  - python >=3.9,<4
+  license: MIT
+  license_family: MIT
+  size: 67711
+  timestamp: 1734971333256
 - conda: https://prefix.dev/conda-forge/linux-64/bzip2-1.0.8-hda65f42_8.conda
   sha256: c30daba32ddebbb7ded490f0e371eae90f51e72db620554089103b4a6934b0d5
   md5: 51a19bba1b8ebfb60df25cde030b7ebc
@@ -76,6 +99,15 @@ packages:
   license: ISC
   size: 152432
   timestamp: 1762967197890
+- conda: https://prefix.dev/conda-forge/noarch/grapheme-0.6.0-pyhd8ed1ab_1.conda
+  sha256: 52ec6eb2e39896ebe1bcf230d5aeaf5aba4585f7ae5d4f0a52afd2f9cc5df000
+  md5: 73cfdaf9ae3ef18c9da7e3487cb8a63f
+  depends:
+  - python >=3.9
+  license: MIT
+  license_family: MIT
+  size: 112664
+  timestamp: 1734963422048
 - conda: https://prefix.dev/conda-forge/linux-64/ld_impl_linux-64-2.45-default_hbd61a6d_104.conda
   sha256: 9e191baf2426a19507f1d0a17be0fdb7aa155cdf0f61d5a09c808e0a69464312
   md5: a6abd2796fc332536735f68ba23f7901
