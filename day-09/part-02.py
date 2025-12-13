@@ -46,14 +46,10 @@ class Polygon:
 
             if p1.x == p2.x:
                 y_min, y_max = min(p1.y, p2.y), max(p1.y, p2.y)
-                self.vertical_edges.append(
-                    VerticalEdge(x=p1.x, y_min=y_min, y_max=y_max)
-                )
+                self.vertical_edges.append(VerticalEdge(p1.x, y_min, y_max))
             else:
                 x_min, x_max = min(p1.x, p2.x), max(p1.x, p2.x)
-                self.horizontal_edges.append(
-                    HorizontalEdge(y=p1.y, x_min=x_min, x_max=x_max)
-                )
+                self.horizontal_edges.append(HorizontalEdge(p1.y, x_min, x_max))
 
     def is_point_inside(self, px: float, py: float) -> bool:
         """Check if point is inside using ray casting.
@@ -86,9 +82,7 @@ class Polygon:
                 continue
 
             # Check if edge y-range overlaps with rectangle y-range
-            overlap_min = max(edge.y_min, y_min)
-            overlap_max = min(edge.y_max, y_max)
-            if overlap_min < overlap_max:
+            if edge.y_min < y_max and edge.y_max > y_min:
                 return True
 
         for edge in self.horizontal_edges:
@@ -97,9 +91,7 @@ class Polygon:
                 continue
 
             # Check if edge x-range overlaps with rectangle x-range
-            overlap_min = max(edge.x_min, x_min)
-            overlap_max = min(edge.x_max, x_max)
-            if overlap_min < overlap_max:
+            if edge.x_min < x_max and edge.x_max > x_min:
                 return True
 
         return False
