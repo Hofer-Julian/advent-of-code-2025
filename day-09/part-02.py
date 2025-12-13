@@ -1,104 +1,131 @@
-from __future__ import annotations
-
 from collections import deque
-from dataclasses import dataclass
-from itertools import combinations, islice
 from pathlib import Path
-
-import numpy as np
-from alive_progress import alive_it
-
-
-@dataclass(frozen=True)
-class Point:
-    x: int
-    y: int
-
-
-def area(a: Point, b: Point) -> int:
-    return abs(a.x - b.x + 1) * abs(a.y - b.y + 1)
-
-
-def sliding_window(iterable, n):
-    "Collect data into overlapping fixed-length chunks or blocks."
-    # sliding_window('ABCDEFG', 4) → ABCD BCDE CDEF DEFG
-    iterator = iter(iterable)
-    window = deque(islice(iterator, n - 1), maxlen=n)
-    for x in iterator:
-        window.append(x)
-        yield tuple(window)
 
 
 def solve(input: str) -> int:
-    rows = input.split("\n")
+    points = parse_points(input)
 
-    points: list[Point] = []
-    for row in rows:
-        x, y = row.split(",")
-        points.append(Point(int(x), int(y)))
+    xs = sorted({x for x, _ in points})
+    ys = sorted({y for _, y in points})
 
-    max_len = 0
-    for point in points:
-        max_len = max(point.x, point.y, max_len)
+    grid = build_grid(points, xs, ys)
+    fill_interior(grid)
+    prefix_sums = build_prefix_sum_array(grid)
 
-    floor = np.zeros((max_len + 1, max_len + 1), dtype=np.int8)
-    points.append(points[0])
-    first_tile = {}
-    for point_1, point_2 in sliding_window(points, 2):
-        floor[point_1.y, point_1.x] = 1
-        if point_1.y not in first_tile or first_tile[point_1.y] > point_1.x:
-            first_tile[point_1.y] = point_1.x
-        if point_1.x == point_2.x:
-            min_y = min(point_1.y, point_2.y)
-            max_y = max(point_1.y, point_2.y)
-            for y in range(min_y + 1, max_y):
-                floor[y, point_1.x] = 2
-                if y not in first_tile or first_tile[y] > point_1.x:
-                    first_tile[y] = point_1.x
-        if point_1.y == point_2.y:
-            min_x = min(point_1.x, point_2.x)
-            max_x = max(point_1.x, point_2.x)
-            for x in range(min_x + 1, max_x):
-                floor[point_1.y, x] = 2
-                if point_1.y not in first_tile or first_tile[point_1.y] > x:
-                    first_tile[point_1.y] = x
+    max_area = 0
+    for i, (x1, y1) in enumerate(points):
+        for x2, y2 in points[:i]:
+            if is_valid_rectangle(x1, y1, x2, y2, xs, ys, prefix_sums):
+                area = (abs(x1 - x2) + 1) * (abs(y1 - y2) + 1)
+                max_area = max(max_area, area)
 
-    for y, row in enumerate(alive_it(floor)):
-        inside = False
-        if y not in first_tile:
-            continue
+    return max_area
 
-        for x in range(first_tile[y], len(row)):
-            value = row[x]
-            if inside:
-                if value == 1 or value == 2:
-                    inside = False
-                elif value == 0:
-                    floor[y, x] = 2
-            else:
-                if (value == 1 or value == 2) and x + 1 < len(row) and row[x + 1] == 0:
-                    inside = True
-    perm = combinations(points, 2)
-    biggest_areas = sorted(
-        perm, key=lambda points: area(points[0], points[1]), reverse=True
-    )
-    for point_1, point_2 in biggest_areas:
-        min_y = min(point_1.y, point_2.y)
-        max_y = max(point_1.y, point_2.y)
-        min_x = min(point_1.x, point_2.x)
-        max_x = max(point_1.x, point_2.x)
 
-        def find_max_area():
-            for x in range(min_x, max_x + 1):
-                for y in range(min_y, max_y + 1):
-                    if floor[y, x] not in [1, 2]:
-                        return False
-            return True
+def parse_points(input: str) -> list[list[int]]:
+    points = []
+    for line in input.split("\n"):
+        x, y = line.split(",")
+        points.append([int(x), int(y)])
+    return points
 
-        if find_max_area():
-            return area(point_1, point_2)
 
-    raise RuntimeError("Could not find solution")
+def build_grid(
+    points: list[list[int]], xs: list[int], ys: list[int]
+) -> list[list[int]]:
+    grid = [[0] * (len(ys) * 2 - 1) for _ in range(len(xs) * 2 - 1)]
+
+    polygon_edges = zip(points, points[1:] + points[:1])
+    for (x1, y1), (x2, y2) in polygon_edges:
+        cx1, cx2 = sorted([xs.index(x1) * 2, xs.index(x2) * 2])
+        cy1, cy2 = sorted([ys.index(y1) * 2, ys.index(y2) * 2])
+        for cx in range(cx1, cx2 + 1):
+            for cy in range(cy1, cy2 + 1):
+                grid[cx][cy] = 1
+
+    return grid
+
+
+def fill_interior(grid: list[list[int]]) -> None:
+    outside = find_outside_cells(grid)
+
+    for x in range(len(grid)):
+        for y in range(len(grid[0])):
+            if (x, y) not in outside:
+                grid[x][y] = 1
+
+
+def find_outside_cells(grid: list[list[int]]) -> set[tuple[int, int]]:
+    outside: set[tuple[int, int]] = {(-1, -1)}
+    queue: deque[tuple[int, int]] = deque(outside)
+
+    while queue:
+        tx, ty = queue.popleft()
+        neighbors = [(tx - 1, ty), (tx + 1, ty), (tx, ty - 1), (tx, ty + 1)]
+
+        for nx, ny in neighbors:
+            if is_out_of_bounds(nx, ny, grid):
+                continue
+            if is_wall(nx, ny, grid):
+                continue
+            if (nx, ny) in outside:
+                continue
+
+            outside.add((nx, ny))
+            queue.append((nx, ny))
+
+    return outside
+
+
+def is_out_of_bounds(x: int, y: int, grid: list[list[int]]) -> bool:
+    return x < -1 or y < -1 or x > len(grid) or y > len(grid[0])
+
+
+def is_wall(x: int, y: int, grid: list[list[int]]) -> bool:
+    in_grid = 0 <= x < len(grid) and 0 <= y < len(grid[0])
+    return in_grid and grid[x][y] == 1
+
+
+def build_prefix_sum_array(grid: list[list[int]]) -> list[list[int]]:
+    prefix_sums = [[0] * len(row) for row in grid]
+
+    for x in range(len(prefix_sums)):
+        for y in range(len(prefix_sums[0])):
+            left = prefix_sums[x - 1][y] if x > 0 else 0
+            top = prefix_sums[x][y - 1] if y > 0 else 0
+            topleft = prefix_sums[x - 1][y - 1] if x > 0 and y > 0 else 0
+            prefix_sums[x][y] = left + top - topleft + grid[x][y]
+
+    return prefix_sums
+
+
+def is_valid_rectangle(
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int,
+    xs: list[int],
+    ys: list[int],
+    prefix_sums: list[list[int]],
+) -> bool:
+    cx1, cx2 = sorted([xs.index(x1) * 2, xs.index(x2) * 2])
+    cy1, cy2 = sorted([ys.index(y1) * 2, ys.index(y2) * 2])
+
+    filled_cells = query_prefix_sum(prefix_sums, cx1, cy1, cx2, cy2)
+    total_cells = (cx2 - cx1 + 1) * (cy2 - cy1 + 1)
+
+    return filled_cells == total_cells
+
+
+def query_prefix_sum(
+    prefix_sums: list[list[int]], x1: int, y1: int, x2: int, y2: int
+) -> int:
+    total = prefix_sums[x2][y2]
+    left = prefix_sums[x1 - 1][y2] if x1 > 0 else 0
+    top = prefix_sums[x2][y1 - 1] if y1 > 0 else 0
+    topleft = prefix_sums[x1 - 1][y1 - 1] if x1 > 0 and y1 > 0 else 0
+
+    return total - left - top + topleft
 
 
 example_input = Path(__file__).parent.joinpath("example.txt").read_text().strip()
