@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from itertools import combinations_with_replacement
 from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 
 @dataclass(frozen=True)
 class Machine:
-    buttons: list[NDArray[np.int32]]
+    buttons: NDArray[np.int32]
     joltage: NDArray[np.int32]
 
     def parse(line: str) -> Machine:
@@ -23,25 +23,33 @@ class Machine:
         for i, value in enumerate(joltage_seg):
             joltage[i] = int(value)
 
-        buttons = []
-        for seg in segments:
-            button = np.zeros(len(joltage_seg), dtype=np.int32)
+        buttons = np.zeros((len(joltage_seg), len(segments)), dtype=np.int32)
+        for c, seg in enumerate(segments):
             for value in seg[1:-1].split(","):
-                button[int(value)] = 1
-            buttons.append(button)
+                buttons[int(value), c] = 1
 
         return Machine(buttons, joltage)
 
     def lowest_button_combination(self) -> int:
-        i = 1
-        while True:
-            for buttons in combinations_with_replacement(self.buttons, i):
-                joltage_state = np.zeros_like(self.joltage, dtype=np.int32)
-                for button in buttons:
-                    joltage_state += button
-                if np.array_equal(joltage_state, self.joltage):
-                    return len(buttons)
-            i += 1
+        num_buttons = self.buttons.shape[1]
+
+        # Objective: minimize sum(x), i.e., total button presses
+        # c @ x = 1*x0 + 1*x1 + ... + 1*xn = sum(x)
+        c = np.ones(num_buttons)
+
+        # Constraint: A @ x = b (exact equality)
+        # LinearConstraint(A, lb, ub) enforces: lb <= A @ x <= ub
+        # For equality, set lb = ub = target
+        constraints = LinearConstraint(self.buttons, self.joltage, self.joltage)
+
+        bounds = Bounds(0, np.inf)
+
+        # Integrality: 1 means "must be integer" for each variable
+        integrality = np.ones(num_buttons, dtype=int)
+
+        # Solve and return total presses
+        result = milp(c, constraints=constraints, integrality=integrality, bounds=bounds)
+        return int(result.fun)
 
 
 def solve(input: str) -> int:

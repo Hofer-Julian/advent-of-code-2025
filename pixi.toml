@@ -14,6 +14,7 @@ py = { cmd = "python day-{{ day }}/part-{{ part }}.py", args = ["day", "part"] }
 nushell = ">=0.109.0,<0.110"
 python = ">=3.14.0,<3.15"
 numpy = ">=2.3.5,<3"
+scipy = ">=1.15.3,<2"
 alive-progress = ">=3.2.0,<4"
 ipython = ">=9.8.0,<10"
 
