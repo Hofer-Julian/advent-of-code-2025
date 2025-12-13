@@ -1,25 +1,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from itertools import combinations
+from itertools import combinations_with_replacement
 from pathlib import Path
+
+import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
 class Machine:
-    goal: list[bool]
-    buttons: list[list[int]]
+    goal: NDArray[np.bool_]
+    buttons: list[NDArray[np.bool_]]
     joltage: list[int]
 
     def parse(line: str) -> Machine:
         segments = line.split(" ")
 
-        goal = []
-        for c in segments.pop(0)[1:-1]:
+        goal_seg = segments.pop(0)[1:-1]
+        goal = np.zeros(len(goal_seg), dtype=bool)
+        for i, c in enumerate(goal_seg):
             if c == ".":
-                goal.append(False)
+                goal[i] = False
             elif c == "#":
-                goal.append(True)
+                goal[i] = True
+            else:
+                raise ValueError(c)
 
         joltage = []
         for value in segments.pop()[1:-1].split(","):
@@ -27,19 +33,34 @@ class Machine:
 
         buttons = []
         for seg in segments:
-            button = []
-            for value in seg[1:-1].split(","):
-                button.append(int(value))
+            button_seg = seg[1:-1].split(",")
+            button = np.zeros(len(goal_seg), dtype=bool)
+            for value in button_seg:
+                button[int(value)] = True
             buttons.append(button)
 
         return Machine(goal, buttons, joltage)
 
+    def lowest_button_combination(self) -> int:
+        i = 1
+        while True:
+            for buttons in combinations_with_replacement(self.buttons, i):
+                button_state = np.zeros_like(self.goal, dtype=bool)
+                for button in buttons:
+                    button_state ^= button
+
+                if np.array_equal(button_state, self.goal):
+                    return len(buttons)
+            i += 1
+
 
 def solve(input: str) -> int:
-    machines = [Machine.parse(row) for row in input.split("\n")]
-    print(machines)
+    machines: list[Machine] = [Machine.parse(row) for row in input.split("\n")]
+    result = 0
+    for machine in machines:
+        result += machine.lowest_button_combination()
 
-    return 0
+    return result
 
 
 example_input = Path(__file__).parent.joinpath("example.txt").read_text().strip()
