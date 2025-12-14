@@ -9,28 +9,28 @@ def count_paths(
     graph: dict[str, list[str]],
     *,
     start: str,
-    end: str,
+    goal: str,
     forbidden: frozenset[str],
     cache: dict[tuple[str, str, frozenset[str]], int],
 ) -> int:
     """Count all paths from node to end, avoiding forbidden nodes."""
 
     # graph doesn't need to be cached since it is immutable
-    key = (start, end, forbidden)
+    key = (start, goal, forbidden)
     if key in cache:
         return cache[key]
 
     count = 0
     if start in forbidden:
         return 0
-    elif start == end:
+    elif start == goal:
         return 1
     elif start == END_NODE:
         return 0
     else:
         for output in graph[start]:
             count += count_paths(
-                graph, start=output, end=end, forbidden=forbidden, cache=cache
+                graph, start=output, goal=goal, forbidden=forbidden, cache=cache
             )
 
     cache[key] = count
@@ -52,26 +52,26 @@ def solve(input: str) -> int:
     # Ordering 1: svr -> dac -> fft -> out
     # We forbid fft in the first segment to avoid counting paths where fft comes before dac
     paths_svr_to_dac = count_paths(
-        graph, start="svr", end="dac", forbidden=frozenset({"fft"}), cache=cache
+        graph, start="svr", goal="dac", forbidden=frozenset({"fft"}), cache=cache
     )
     paths_dac_to_fft = count_paths(
-        graph, start="dac", end="fft", forbidden=frozenset(), cache=cache
+        graph, start="dac", goal="fft", forbidden=frozenset(), cache=cache
     )
     paths_fft_to_out = count_paths(
-        graph, start="fft", end=END_NODE, forbidden=frozenset(), cache=cache
+        graph, start="fft", goal=END_NODE, forbidden=frozenset(), cache=cache
     )
     total += paths_svr_to_dac * paths_dac_to_fft * paths_fft_to_out
 
     # Ordering 2: svr -> fft -> dac -> out
     # We forbid dac in the first segment to avoid counting paths where dac comes before fft
     paths_svr_to_fft = count_paths(
-        graph, start="svr", end="fft", forbidden=frozenset({"dac"}), cache=cache
+        graph, start="svr", goal="fft", forbidden=frozenset({"dac"}), cache=cache
     )
     paths_fft_to_dac = count_paths(
-        graph, start="fft", end="dac", forbidden=frozenset(), cache=cache
+        graph, start="fft", goal="dac", forbidden=frozenset(), cache=cache
     )
     paths_dac_to_out = count_paths(
-        graph, start="dac", end=END_NODE, forbidden=frozenset(), cache=cache
+        graph, start="dac", goal=END_NODE, forbidden=frozenset(), cache=cache
     )
     total += paths_svr_to_fft * paths_fft_to_dac * paths_dac_to_out
 
