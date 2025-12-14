@@ -48,6 +48,7 @@ def solve(input: str) -> int:
         outputs = others.split(" ")
         graph[node] = outputs
 
+    result = 0
     for second in ["fft", "dac"]:
         number_paths = 1
         third = "dac" if second == "fft" else "fft"
@@ -94,6 +95,7 @@ def solve(input: str) -> int:
             continue
 
         # First segment
+        print(f"Find path from svr to {second}")
         paths = find_all_paths(
             graph=graph,
             current_node="svr",
@@ -105,12 +107,9 @@ def solve(input: str) -> int:
         if number == 0:
             raise ValueError(f"Couldn't find path from svr to {second}")
         number_paths *= number
+        result += number_paths
 
-        print(f"Finished path from svr to {second}")
-
-        break
-
-    return number_paths
+    return result
 
 
 print("Calculate example")
