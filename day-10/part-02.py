@@ -48,8 +48,13 @@ class Machine:
         integrality = np.ones(num_buttons, dtype=int)
 
         # Solve and return total presses
-        result = milp(c, constraints=constraints, integrality=integrality, bounds=bounds)
-        return int(result.fun)
+        result = milp(
+            c, constraints=constraints, integrality=integrality, bounds=bounds
+        )
+        # Result is returned as floats, even with integer constraints.
+        # Due to floating point precision, 5 might be 4.99999999.
+        # Casting directly to int() would floor it to 4 (wrong).
+        return np.round(result.fun).astype(int)
 
 
 def solve(input: str) -> int:
