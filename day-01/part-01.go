@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func solve(lines []string) int {
@@ -25,8 +25,12 @@ func solve(lines []string) int {
 			position += value
 		}
 
-		// Wrap position to 0-99 range (proper modulo for negative numbers)
-		position = ((position % 100) + 100) % 100
+		for position < 0 {
+			position += 100
+		}
+		for position >= 100 {
+			position -= 100
+		}
 
 		if position == 0 {
 			count++
@@ -37,18 +41,12 @@ func solve(lines []string) int {
 }
 
 func readLines(filename string) ([]string, error) {
-	file, err := os.Open(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
+	text := strings.TrimSpace(string(content))
+	return strings.Split(text, "\n"), nil
 }
 
 func main() {
