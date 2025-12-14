@@ -8,6 +8,9 @@ version = "0.1.0"
 [tasks]
 nu = { cmd = "nu day-{{ day }}/part-{{ part }}.nu", args = ["day", "part"] }
 py = { cmd = "python day-{{ day }}/part-{{ part }}.py", args = ["day", "part"] }
+go = { cmd = "go run day-{{ day }}/part-{{ part }}.go", args = ["day", "part"] }
+[feature.haskell.tasks]
+hs = { cmd = "runhaskell day-{{ day }}/part-{{ part }}.hs", args = ["day", "part"] }
 
 
 [dependencies]
@@ -17,4 +20,12 @@ numpy = ">=2.3.5,<3"
 scipy = ">=1.15.3,<2"
 alive-progress = ">=3.2.0,<4"
 ipython = ">=9.8.0,<10"
+go = ">=1.25.5,<2"
+gopls = ">=0.20.0,<0.21"
+
+[feature.haskell.dependencies]
+ghc = ">=8.10.7,<8.11"
+
+[environments]
+haskell = { features = ["haskell"], no-default-feature = true }
 
